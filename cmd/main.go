@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const urlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/%d/%d/%d/%d%d000_%d_%d.png"
+const urlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/%d/%02d/%02d/%02d%d000_%d_%d.png"
 const tileWidth = 550
 
 type Signal struct {
@@ -26,16 +26,23 @@ type Signal struct {
 
 func main() {
 	var quality uint
+	var timestamp int64
 	flag.UintVar(&quality, "q", 2, "Image quality (1: 550x550, 2: 1100x1100, 4: 2200x2200, 8: 4400x4400, 16: 8800x8800)")
+	flag.Int64Var(&timestamp, "t", 0, "Unix timestamp(ms)")
 	flag.Parse()
 	if quality != 1 && quality != 2 && quality != 4 && quality != 8 && quality != 16 {
 		log.Printf("unknown image quality %d", quality)
 		os.Exit(1)
 	}
 	var ch = make(chan Signal, 5)
-	now := time.Now().UTC().Add(-20 * time.Minute)
-	year, month, day := now.Date()
-	hour, minute := now.Hour(), now.Minute()
+	var t time.Time
+	if timestamp != 0 {
+		t = time.UnixMilli(int64(timestamp)).UTC()
+	} else {
+		t = time.Now().UTC().Add(-20 * time.Minute)
+	}
+	year, month, day := t.Date()
+	hour, minute := t.Hour(), t.Minute()
 	level := int(quality)
 	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
 	for x := 0; x < level; x++ {
@@ -66,7 +73,7 @@ func main() {
 	log.Printf("Tile images were composed!")
 
 	// save to os.
-	filename := fmt.Sprintf("himawari8_%d%d%dT%d%d000Z.png", year, month, day, hour, minute/10)
+	filename := fmt.Sprintf("himawari8_%d%02d%02dT%02d%d000Z.png", year, month, day, hour, minute/10)
 	log.Printf("Saving image to %s", filename)
 	var buf bytes.Buffer
 	png.Encode(&buf, r)
