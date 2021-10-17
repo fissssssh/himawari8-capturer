@@ -34,7 +34,8 @@ func main() {
 		log.Printf("unknown image quality %d", quality)
 		os.Exit(1)
 	}
-	var ch = make(chan Signal, 5)
+	control := make(chan struct{}, 5)
+	var ch = make(chan Signal)
 	var t time.Time
 	if timestamp != 0 {
 		t = time.UnixMilli(int64(timestamp)).UTC()
@@ -47,6 +48,7 @@ func main() {
 	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
 	for x := 0; x < level; x++ {
 		for y := 0; y < level; y++ {
+			control <- struct{}{}
 			go func(x int, y int) {
 				url := fmt.Sprintf(urlTemplate, level, year, month, day, hour, minute/10, x, y)
 				log.Printf("Get %d-%d tile image from %s...", x, y, url)
@@ -58,8 +60,9 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				ch <- Signal{x, y, img}
 				log.Printf("Get %d-%d tile image done!", x, y)
+				<-control
+				ch <- Signal{x, y, img}
 			}(x, y)
 		}
 	}
