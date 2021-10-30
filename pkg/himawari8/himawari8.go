@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -51,9 +52,9 @@ type signal struct {
 	Y     int
 	Image image.Image
 	Op    draw.Op
-	Error error
 }
 
+// request image concurrent limit
 const concurrency = 10
 const tileWidth = 550
 const tileEarthUrlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/%d/%02d/%02d/%02d%d000_%d_%d.png"
@@ -65,36 +66,41 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 	hour, minute := t.Hour(), t.Minute()
 	conCh := make(chan struct{}, concurrency)
 	imgCh := make(chan signal)
+	wg := sync.WaitGroup{}
+	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
+	// request image from internet
 	for x := 0; x < level; x++ {
 		for y := 0; y < level; y++ {
 			conCh <- struct{}{}
-			go func(x int, y int, imgCh chan<- signal, conCh <-chan struct{}) {
+			wg.Add(1)
+			go func(x int, y int, imgCh chan<- signal, conCh chan struct{}) {
 				earth, err := getTileEarth(q, year, int(month), day, hour, minute, x, y)
+				<-conCh
 				if err != nil {
-					imgCh <- signal{x, y, nil, draw.Src, err}
+					log.Printf("get tile earth %d-%d failed: %s", x, y, err)
+					wg.Done()
 				} else {
-					imgCh <- signal{x, y, earth, draw.Src, nil}
+					imgCh <- signal{x, y, earth, draw.Src}
 				}
 				if c != Ignore {
+					conCh <- struct{}{}
+					wg.Add(1)
 					shorelines, err := getTileShorelines(q, c, x, y)
+					<-conCh
 					if err != nil {
-						imgCh <- signal{x, y, nil, draw.Over, err}
+						log.Printf("get tile shorelines %d-%d failed: %s", x, y, err)
+						wg.Done()
 					} else {
-						imgCh <- signal{x, y, shorelines, draw.Over, nil}
+						imgCh <- signal{x, y, shorelines, draw.Over}
 					}
 				}
-				<-conCh
 			}(x, y, imgCh, conCh)
 		}
 	}
-	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
-	count := level * level
-	if c != Ignore {
-		count *= 2
-	}
-	for i := 0; i < count; i++ {
-		s := <-imgCh
-		if s.Error == nil {
+	// receive image from channel for drawing
+	go func() {
+		for {
+			s := <-imgCh
 			var t string
 			if s.Op == draw.Src {
 				t = "earth"
@@ -103,8 +109,10 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 			}
 			log.Printf("plot %d-%d tile %s", s.X, s.Y, t)
 			draw.Draw(r, s.Image.Bounds().Add(image.Pt(s.X*tileWidth, s.Y*tileWidth)), s.Image, s.Image.Bounds().Min, s.Op)
+			wg.Done()
 		}
-	}
+	}()
+	wg.Wait()
 	var buf bytes.Buffer
 	err := png.Encode(&buf, r)
 	if err != nil {

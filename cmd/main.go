@@ -4,28 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"himawari8Capturer/pkg/himawari8"
-	"image"
 	"io"
 	"log"
 	"os"
 	"time"
-)
-
-const tileWidth = 550
-const tileUrlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/%d/%02d/%02d/%02d%d000_%d_%d.png"
-const shoreLineUrlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/coastline/%s_%d_%d.png"
-
-type Signal struct {
-	X     int
-	Y     int
-	Image image.Image
-}
-
-const (
-	None uint = iota
-	Red
-	Green
-	Yellow
 )
 
 func main() {
@@ -79,16 +61,15 @@ func main() {
 	// save to os.
 	filename := fmt.Sprintf("himawari8_%d%02d%02dT%02d%d000Z.png", year, month, day, hour, minute/10)
 	log.Printf("saving image to %s", filename)
-	save(img, filename)
-	log.Printf("all done!")
-}
-
-func save(reader io.Reader, filename string) error {
 	out, err := os.Create(filename)
 	if err != nil {
-		return err
+		log.Fatalf("save image failed: %s", err)
 	}
 	defer out.Close()
-	_, err = io.Copy(out, reader)
-	return err
+	_, err = io.Copy(out, img)
+	if err != nil {
+		log.Fatalf("save image failed: %s", err)
+	} else {
+		log.Printf("all done!")
+	}
 }
