@@ -2,6 +2,7 @@ package himawari8
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"image"
 	"image/draw"
@@ -21,6 +22,7 @@ const (
 	FHD
 	QHD
 	UHD
+	UHDPlus Quality = 20
 )
 
 type ShorelineColor uint8
@@ -65,7 +67,9 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 	year, month, day := t.Date()
 	hour, minute := t.Hour(), t.Minute()
 	conCh := make(chan struct{}, concurrency)
+	defer close(conCh)
 	imgCh := make(chan signal)
+	defer close(imgCh)
 	wg := sync.WaitGroup{}
 	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
 	// request image from internet
@@ -97,19 +101,25 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 			}(x, y, imgCh, conCh)
 		}
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	// receive image from channel for drawing
 	go func() {
 		for {
-			s := <-imgCh
-			var t string
-			if s.Op == draw.Src {
-				t = "earth"
-			} else {
-				t = "shorelines"
+			select {
+			case s := <-imgCh:
+				var t string
+				if s.Op == draw.Src {
+					t = "earth"
+				} else {
+					t = "shorelines"
+				}
+				log.Printf("plot %d-%d tile %s", s.X, s.Y, t)
+				draw.Draw(r, s.Image.Bounds().Add(image.Pt(s.X*tileWidth, s.Y*tileWidth)), s.Image, s.Image.Bounds().Min, s.Op)
+				wg.Done()
+			case <-ctx.Done():
+				return
 			}
-			log.Printf("plot %d-%d tile %s", s.X, s.Y, t)
-			draw.Draw(r, s.Image.Bounds().Add(image.Pt(s.X*tileWidth, s.Y*tileWidth)), s.Image, s.Image.Bounds().Min, s.Op)
-			wg.Done()
 		}
 	}()
 	wg.Wait()
