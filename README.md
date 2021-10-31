@@ -26,8 +26,13 @@ $ go build -o build/himawari8-capturer cmd/main.go
 ## Usage
 
 ```shell
-$ ./himawari-capturer -q quality -t unix_millisecond_timestamp
+$ ./himawari-capturer [-q quality] [-t unix_millisecond_timestamp] [-l shorelines_color]
 ```
+| Option | Access values                                                                                                          | Remark              |
+| ------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `-q`   | `1`: `550*550`<br>`2`: `1100*1100`<br>`3`: `2200*2200`<br>`4`: `4400*4400` <br>`5`: `8800*8800` <br>`6`: `11000*11000` | Resolution of image |
+| `-t`   | Unix millisecond timestamp                                                                                             | Time of image       |
+| `-l`   | `0`: `Ignore`<br>`1`: `Red`<br>`2`: `Green`<br>`3`: `Yellow`<br>                                                       | Color of shorelines |
 
 ### Example
 

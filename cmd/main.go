@@ -14,7 +14,7 @@ func main() {
 	var quality uint
 	var timestamp int64
 	var shorelinesColor uint
-	flag.UintVar(&quality, "q", 2, "Image quality (1: 550x550, 2: 1100x1100, 4: 2200x2200, 8: 4400x4400, 16: 8800x8800)")
+	flag.UintVar(&quality, "q", 2, "Image quality (1: 550x550, 2: 1100x1100, 3: 2200x2200, 4: 4400x4400, 5: 8800x8800, 6: 11000*11000)")
 	flag.UintVar(&shorelinesColor, "l", 0, "Shorelines color (0: None, 1: Red, 2: Green, 3: Yellow)")
 	flag.Int64Var(&timestamp, "t", 0, "Unix timestamp(ms)")
 	flag.Parse()
@@ -24,12 +24,14 @@ func main() {
 		q = himawari8.Low
 	case 2:
 		q = himawari8.HD
-	case 4:
+	case 3:
 		q = himawari8.FHD
-	case 8:
+	case 4:
 		q = himawari8.QHD
-	case 16:
+	case 5:
 		q = himawari8.UHD
+	case 6:
+		q = himawari8.UHDPlus
 	default:
 		log.Fatalf("unknown image quality %d", quality)
 	}
