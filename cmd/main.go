@@ -62,7 +62,7 @@ func main() {
 	}
 	// save to os.
 	filename := fmt.Sprintf("himawari8_%d%02d%02dT%02d%d000Z.png", year, month, day, hour, minute/10)
-	log.Printf("saving image to %s", filename)
+	fmt.Printf("saving image to %s\n", filename)
 	out, err := os.Create(filename)
 	if err != nil {
 		log.Fatalf("save image failed: %s", err)
@@ -72,6 +72,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("save image failed: %s", err)
 	} else {
-		log.Printf("all done!")
+		fmt.Printf("all done!\n")
 	}
 }

@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/fissssssh/go-cmdpb/progressbar"
 )
 
 type Quality uint8
@@ -73,6 +75,11 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 	wg := sync.WaitGroup{}
 	r := image.NewRGBA(image.Rect(0, 0, level*tileWidth, level*tileWidth))
 	// request image from internet
+	b := progressbar.NewCmdProgressBar()
+	b.SetMax(float64(level) * float64(level))
+	if c != Ignore {
+		b.SetMax(b.Max() * 2)
+	}
 	for x := 0; x < level; x++ {
 		for y := 0; y < level; y++ {
 			conCh <- struct{}{}
@@ -114,9 +121,15 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 				} else {
 					t = "shorelines"
 				}
-				log.Printf("plot %d-%d tile %s", s.X, s.Y, t)
+				msg := fmt.Sprintf("plot %d-%d tile %s", s.X, s.Y, t)
 				draw.Draw(r, s.Image.Bounds().Add(image.Pt(s.X*tileWidth, s.Y*tileWidth)), s.Image, s.Image.Bounds().Min, s.Op)
 				wg.Done()
+				b.SetValue(b.Value() + 1)
+				b.Print(msg)
+				if b.Value() == b.Max() {
+					b.Print("all tiles are downloaded")
+					fmt.Println()
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -133,13 +146,11 @@ func GetImage(q Quality, t time.Time, c ShorelineColor) (io.Reader, error) {
 
 func getTileEarth(q Quality, year int, month int, day int, hour int, minute int, x int, y int) (image.Image, error) {
 	url := fmt.Sprintf(tileEarthUrlTemplate, q, year, month, day, hour, minute/10, x, y)
-	log.Printf("get tile %d-%d from %s for earth", x, y, url)
 	return requestImage(url)
 }
 
 func getTileShorelines(q Quality, c ShorelineColor, x int, y int) (image.Image, error) {
 	url := fmt.Sprintf(tileShorelineUrlTemplate, q, c, x, y)
-	log.Printf("get tile %d-%d from %s for shorelines", x, y, url)
 	return requestImage(url)
 }
 
