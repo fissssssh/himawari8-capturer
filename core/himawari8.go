@@ -75,6 +75,7 @@ func GetEarthWithShorelines(q Quality, t time.Time, c Shoreline) (io.Reader, err
 }
 
 func getEarth(q Quality, t time.Time) (image.Image, error) {
+	t = t.UTC()
 	year, month, day := t.Date()
 	hour, minute := t.Hour(), t.Minute()
 	return getTilesAndCombine(q, func(x, y int) (image.Image, error) {
