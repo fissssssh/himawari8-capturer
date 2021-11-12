@@ -2,8 +2,8 @@ name: Auto Upload Bot
 
 on:
   schedule:
-    - cron: 8/10 * * * *
-
+    - cron: 25 * * * *
+  workflow_dispatch:
 jobs:
   auto-upload:
     runs-on: ubuntu-latest
