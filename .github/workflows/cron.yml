@@ -16,4 +16,4 @@ jobs:
         go-version: 1.17
 
     - name: Build CLI
-      run: go run ./cmd/cron/main.go ${{ COS_ENDPOINT }} ${{ COS_SECRET_ID }} ${{ COS_SECRET_KEY }}
+      run: go run ./cmd/cron/main.go ${{ secrets.COS_ENDPOINT }} ${{ secrets.COS_SECRET_ID }} ${{ secrets.COS_SECRET_KEY }}
