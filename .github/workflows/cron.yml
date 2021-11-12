@@ -2,10 +2,10 @@ name: Go
 
 on:
   schedule:
-    - cron: 0 0/10 * * *
+    - cron: 3/10 * * * *
 
 jobs:
-  build:
+  auto-upload:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
