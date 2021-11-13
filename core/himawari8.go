@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -32,6 +33,8 @@ const tileEarthUrlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/%
 const tileShorelineUrlTemplate = "https://himawari8.nict.go.jp/img/D531106/%dd/550/coastline/%s_%d_%d.png"
 const latestEarthTimeUrlTemplate = "https://himawari8.nict.go.jp/img/FULL_24h/latest.json?_=%d"
 const latestDateLayout = "2006-01-02 15:04:05"
+
+var client http.Client = http.Client{}
 
 func GetLatestEarthTime() (time.Time, error) {
 	url := fmt.Sprintf(latestEarthTimeUrlTemplate, time.Now().UnixMilli())
@@ -135,7 +138,7 @@ func getTilesAndCombine(q Quality, tileGetter func(x, y int) (image.Image, error
 }
 
 func getImage(url string) (image.Image, error) {
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -145,4 +148,18 @@ func getImage(url string) (image.Image, error) {
 		return nil, err
 	}
 	return img, nil
+}
+
+func SetHttpProxy(proxyUrl string) error {
+	proxy, err := url.Parse(proxyUrl)
+	if err != nil {
+		return err
+	}
+	transport := http.Transport{
+		Proxy: func(r *http.Request) (*url.URL, error) {
+			return proxy, nil
+		},
+	}
+	client.Transport = &transport
+	return nil
 }

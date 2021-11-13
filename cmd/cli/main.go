@@ -14,10 +14,18 @@ func main() {
 	var quality uint
 	var timestamp int64
 	var shorelinesColor uint
+	var proxy string
 	flag.UintVar(&quality, "q", 2, "Image quality (1: 550x550, 2: 1100x1100, 3: 2200x2200, 4: 4400x4400, 5: 8800x8800, 6: 11000*11000)")
 	flag.UintVar(&shorelinesColor, "l", 0, "Shorelines color (0: None, 1: Red, 2: Green, 3: Yellow)")
 	flag.Int64Var(&timestamp, "t", 0, "Unix timestamp(ms)")
+	flag.StringVar(&proxy, "p", "", "Proxy for http request")
 	flag.Parse()
+	if proxy != "" {
+		err := core.SetHttpProxy(proxy)
+		if err != nil {
+			log.Fatalf("error proxy: %s", proxy)
+		}
+	}
 	var q core.Quality
 	switch quality {
 	case 1:
@@ -64,6 +72,7 @@ func main() {
 		}
 		log.Printf("Getting latest image at %v", t)
 	}
+
 	year, month, day := t.Date()
 	hour, minute := t.Hour(), t.Minute()
 	img, err := core.GetEarthWithShorelines(q, t, c)
