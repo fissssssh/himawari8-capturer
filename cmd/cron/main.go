@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 	year, month, day := latestTime.Date()
-	name := fmt.Sprintf("earth/2200*2200/%v-%v-%v/%v.png", year, int(month), day, latestTime.Unix())
+	name := fmt.Sprintf("earth/2200x2200/%v-%v-%v/%v.png", year, int(month), day, latestTime.Unix())
 
 	u, _ := url.Parse(endPoint)
 	b := &cos.BaseURL{BucketURL: u}
