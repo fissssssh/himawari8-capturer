@@ -1,11 +1,11 @@
-name: Go
+name: Auto Upload Bot
 
 on:
   schedule:
-    - cron: 0 0/10 * * * * ?
-
+    - cron: 25 * * * *
+  workflow_dispatch:
 jobs:
-  build:
+  auto-upload:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,4 +16,4 @@ jobs:
         go-version: 1.17
 
     - name: Build CLI
-      run: go run ./cmd/cron/main.go ${COS_ENDPOINT} ${COS_SECRET_ID} ${COS_SECRET_KEY}    
+      run: go run ./cmd/cron/main.go ${{ secrets.COS_ENDPOINT }} ${{ secrets.COS_SECRET_ID }} ${{ secrets.COS_SECRET_KEY }}
