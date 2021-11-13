@@ -5,20 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Web",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "cwd": "${workspaceFolder}",
-            "program": "${cwd}/cmd/web/main.go"
-        },
-        {
             "name": "CLI",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "cwd": "${workspaceFolder}",
-            "program": "${cwd}/cmd/cli/main.go"
+            "program": "${cwd}/cmd/cli/main.go",
+            "args": [
+                "-p",
+                "ht.24.176.1:11223"
+            ]
         }
     ]
 }
