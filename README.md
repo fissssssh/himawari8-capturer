@@ -4,7 +4,8 @@ himawari8-capturer is a tool that can get picture of the earth taken by the hima
 
 ## Install
 
-Get the source code and build.
+* [Download Release.](https://github.com/fissssssh/himawari8-capturer/releases)
+* Get the source code and build.
 
 ### How to get source code ?
 
@@ -20,19 +21,20 @@ You have 2 ways to get source code
 
 ```shell
 $ cd himawari8-capturer
-$ go build -o build/himawari8-capturer cmd/main.go
+$ go build -o build/himawari8-capturer cmd/cli/main.go
 ```
 
 ## Usage
 
 ```shell
-$ ./himawari-capturer [-q quality] [-t unix_millisecond_timestamp] [-l shorelines_color]
+$ ./himawari-capturer [-q quality] [-t unix_millisecond_timestamp] [-l shorelines_color] [-p proxy_url]
 ```
 | Option | Access values                                                                                                          | Remark              |
 | ------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------- |
 | `-q`   | `1`: `550*550`<br>`2`: `1100*1100`<br>`3`: `2200*2200`<br>`4`: `4400*4400` <br>`5`: `8800*8800` <br>`6`: `11000*11000` | Resolution of image |
 | `-t`   | Unix millisecond timestamp                                                                                             | Time of image       |
 | `-l`   | `0`: `Ignore`<br>`1`: `Red`<br>`2`: `Green`<br>`3`: `Yellow`<br>                                                       | Color of shorelines |
+| `-p`   | HTTP proxy url                                                                                                         | HTTP Proxy          |
 
 ### Example
 
