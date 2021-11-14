@@ -17,9 +17,6 @@ import (
 	"time"
 )
 
-type Himawari8 interface {
-	GetImage(q Quality, t time.Time, c Shoreline) (io.Reader, error)
-}
 type tileImage struct {
 	X     int
 	Y     int
