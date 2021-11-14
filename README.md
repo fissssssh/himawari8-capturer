@@ -1,4 +1,8 @@
 # himawari8-capturer
+![](https://img.shields.io/github/workflow/status/fissssssh/himawari8-capturer/Go)
+![](https://img.shields.io/github/v/release/fissssssh/himawari8-capturer)
+![](https://img.shields.io/github/license/fissssssh/himawari8-capturer)
+
 
 himawari8-capturer is a tool that can get picture of the earth taken by the himawari 8
 
